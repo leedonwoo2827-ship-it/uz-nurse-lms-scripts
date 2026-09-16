@@ -2,7 +2,7 @@
 """10단계 — 전체 현황(도구, 모델 없음). 언제든 다시 돌린다.
 
     python tools/s10_catalog.py
-      → data/index.html          122강 표: 제목·장수·글자수·분·상태·링크. 분량 OK 판단은 여기서.
+      → data/index.html          전 강 표: 제목·장수·글자수·분·상태·링크. 분량 OK 판단은 여기서.
       → data/검토의견.xlsx        강마다 시트 1개(122개까지): 이상무·지적(AS IS/TO BE·선택 드롭다운) + 맨 끝 패널 20명
       → data/00_패널/패널명부.xlsx 의 '참여 강의' 열 갱신
       → data/목차.xlsx            설계된 강 제목·학습목표 (차시슬롯 순)
@@ -21,7 +21,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
-from common import DATA, load_input, pack, read
+from common import DATA, load_input, pack, read, site
 
 LECT = DATA / "02_강의"
 HEAD_FILL = PatternFill("solid", fgColor="1F4E79")
@@ -77,17 +77,17 @@ def index_html(slots, stats):
             cls, s["배치"], s["과정"], s["모듈코드"], lid, html.escape(s["교과목명"]), html.escape(st["제목"] or s.get("제목") or ""),
             stage, st["장수"] or "", ("{:,}".format(st["글자수"]) if st["글자수"] else ""), st["분"] or "",
             html.escape(str(st["판정"] or "")), link("원고"), link("탈고")))
-    head = """<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><title>우즈베키스탄 간호사 LMS 강의 — 122강 현황</title>
+    head = """<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><title>@T — 현황</title>
 <style>body{font-family:"Noto Sans KR","Malgun Gothic",sans-serif;font-size:13px;color:#334155;padding:16px 24px}
 table{border-collapse:collapse;width:100%}th{background:#1F4E79;color:#fff;padding:6px 8px;text-align:left;position:sticky;top:0}
 td{border-bottom:1px solid #E2E8F0;padding:5px 8px;vertical-align:top}tr.ok td{background:#F1F8F4}tr.hold td{background:#FFF8E1}
 a{color:#2E75B6}.sum{margin:0 0 14px;color:#64748B}</style></head><body>
-<h1>우즈베키스탄 간호사 LMS 강의 — 122강 현황</h1>
-<p class="sum">초고 @A / 탈고 @B / 122강 · 초고 평균 낭독 @C자 (규격 @D~@E자, 5.5자/초 → 45분 본문) · 규격: 슬라이드 @F~@G장</p>
+<h1>@T — 현황</h1>
+<p class="sum">초고 @A / 탈고 @B / @N강 · 초고 평균 낭독 @C자 (규격 @D~@E자, 5.5자/초 → 45분 본문) · 규격: 슬라이드 @F~@G장</p>
 <p class="sum">파일: <a href="검토의견.xlsx">검토의견.xlsx</a> (강별 시트) · <a href="목차.xlsx">목차.xlsx</a> · <a href="00_패널/패널명부.xlsx">패널명부.xlsx</a></p>
 <table><thead><tr><th>배치</th><th>과정</th><th>모듈</th><th>차시ID</th><th>교과목</th><th>강 제목</th><th>단계</th><th>장</th><th>낭독자</th><th>분</th><th>검수</th><th>파일</th></tr></thead><tbody>
 """
-    for k, v in (("@A", tot["초고"]), ("@B", tot["탈고"]), ("@C", "{:,}".format(tot["글자"] // tot["n"]) if tot["n"] else "-"),
+    for k, v in (("@T", site()["label"]), ("@N", len(slots)), ("@A", tot["초고"]), ("@B", tot["탈고"]), ("@C", "{:,}".format(tot["글자"] // tot["n"]) if tot["n"] else "-"),
                  ("@D", "{:,}".format(cfg["say_total"][0])), ("@E", "{:,}".format(cfg["say_total"][1])),
                  ("@F", cfg["slides"][0]), ("@G", cfg["slides"][1])):
         head = head.replace(k, str(v))

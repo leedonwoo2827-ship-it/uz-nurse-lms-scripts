@@ -2,7 +2,7 @@
 """8단계 — 검토진 16명이 원고를 읽고 의견을 낸다(모델 1회). 의견은 **의견으로 남긴다.**
 
     python tools/s08_review.py B-01-1        → data/02_강의/B-01-1/08_검토.json
-                                               (엑셀은 s10_catalog.py 가 122강을 한 파일로 모은다: data/검토의견.xlsx)
+                                               (엑셀은 s10_catalog.py 가 전 강을 한 파일로 모은다: data/검토의견.xlsx)
 """
 from __future__ import annotations
 

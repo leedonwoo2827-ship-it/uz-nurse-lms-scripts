@@ -4,7 +4,7 @@ set PYTHONIOENCODING=utf-8
 cd /d "%~dp0"
 :menu
 echo.
-echo  우즈베키스탄 간호사 LMS 강의 — 122강 대본 파이프라인
+echo  45분 LMS 강의 대본 파이프라인
 echo  ---------------------------------------------------------
 echo  [0] xlsx 분리      _context\차시설계_입력_v1.xlsx (있으면 건너뜀)
 echo  [1] 패널 20명      data\00_패널\패널명부.xlsx (+ --bio 약력)

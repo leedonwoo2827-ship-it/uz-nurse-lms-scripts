@@ -27,3 +27,6 @@ _*.log
 
 # 공유용 ZIP
 _share/
+
+# 이 사업이 어디를 위한 것인지 — 이름만 담은 로컬 파일
+pack/site.yaml

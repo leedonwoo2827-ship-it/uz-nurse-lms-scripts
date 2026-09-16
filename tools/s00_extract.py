@@ -23,12 +23,14 @@ import openpyxl
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
+from common import site
+
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "_context" / "우즈베키스탄_간호사_교육과정_v4.xlsx"
+SRC = ROOT / "_context" / site()["source_xlsx"]
 OUT = ROOT / "_context" / "차시설계_입력_v1.xlsx"
 
 COURSE_SHEETS = [("기본", "04_기본 간호 실무"), ("응급", "05_응급상황에서의 간호")]
-BATCH1_PER_COURSE = 30          # 1차 배치 = 과정마다 앞쪽 30강 (11월 말 납품분)
+BATCH1_PER_COURSE = 30          # 1차 배치 = 과정마다 앞쪽 이만큼
 
 SUBJ_COLS = ["과정", "모듈코드", "모듈명", "코드", "교과목명", "주역량", "부역량",
              "credit", "LMS", "집합", "운영", "교육방법", "평가방법", "벤치마킹 근거",
@@ -134,13 +136,13 @@ def build(force=False):
     notes = [
         ("이 파일", "원본 xlsx(04·05·06·07 시트)에서 필요한 값만 뽑아 조인한 것. 병합 셀 없음. 이후 모든 단계는 이 파일만 읽는다."),
         ("교과목 시트", "과목 1행. 학습목표·주요 교육내용·현지 적용 유의 = 06 시트, 콘텐츠 형태 = 07 시트."),
-        ("강의수", "= LMS credit. 1 credit = 45분 동영상 1강. 최종평가(B-33·R-31)는 0."),
-        ("1차배치 강의수", "과정마다 과목 순으로 누적 30강까지가 1차(11월 말 납품). 나머지가 2차."),
+        ("강의수", "= LMS credit. 1 credit = 45분 동영상 1강. 최종평가 과목은 0."),
+        ("1차배치 강의수", "과정마다 과목 순으로 누적 %d강까지가 1차. 나머지가 2차." % BATCH1_PER_COURSE),
         ("차시슬롯 시트", "강의 1행. 차시ID = 코드-차수. 제목·학습목표는 2단계(설계)가 채운다. 손으로 미리 적어도 된다 — 설계가 그것을 존중한다."),
-        ("배치", "1 = 1차 30+30, 2 = 나머지."),
+        ("배치", "1 = 1차, 2 = 나머지."),
         ("상태", "미설계 → 설계 → 초고 → 검토 → 탈고. 도구가 갱신하지 않는다(카탈로그 index.html 이 실제 상태를 보여 준다)."),
         ("수정 규칙", "행을 지우거나 차시ID 를 바꾸면 그 강은 만들지 않는다. 강의수를 바꾸면 차시슬롯 행도 맞춰 늘리거나 줄인다."),
-        ("합계", "기본 67강 · 응급 55강 · 계 122강 (LMS 126 − 최종평가 4)."),
+        ("합계", site()["course_summary"]),
     ]
     write_table(ws3, ["항목", "내용"], [dict(항목=a, 내용=b) for a, b in notes])
     ws3.column_dimensions["B"].width = 110

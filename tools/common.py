@@ -36,8 +36,25 @@ def write(p: Path, text: str):
     io.open(p, "w", encoding="utf-8").write(text)
 
 
+def site() -> dict:
+    """이 과정이 어디를 위한 것인가 — 나라·기관·언어 이름. **저장소에 올리지 않는 파일.**
+
+    ★ 이름을 한 곳에 모아 두는 이유는 두 가지다. 저장소를 공개해도 어느 사업인지
+      드러나지 않고, 다른 나라·다른 분야로 옮길 때 이 파일만 바꾸면 된다.
+    """
+    p = PACK_DIR / "site.yaml"
+    if not p.is_file():
+        sys.exit("pack/site.yaml 이 없습니다.\n"
+                 "  견본을 복사해서 채우십시오:  copy pack\\site.sample.yaml pack\\site.yaml")
+    return yaml.safe_load(io.open(p, encoding="utf-8")) or {}
+
+
 def pack() -> dict:
-    return yaml.safe_load(io.open(PACK_DIR / "pack.yaml", encoding="utf-8")) or {}
+    """규격. 안에 {{country}} 같은 자리표시자가 있으면 site.yaml 값으로 채워 돌려준다."""
+    raw = io.open(PACK_DIR / "pack.yaml", encoding="utf-8").read()
+    for k, v in site().items():
+        raw = raw.replace("{{%s}}" % k, str(v))
+    return yaml.safe_load(raw) or {}
 
 
 def terms_text() -> str:
@@ -131,6 +148,9 @@ def fill(template_name: str, **kw) -> str:
     base.update(kw)
     out = tpl
     for k, v in base.items():
+        out = out.replace("{{%s}}" % k, str(v))
+    # site.yaml 의 이름들(나라·기관·언어)은 마지막에 채운다 — 위에서 끼워 넣은 값 안에도 있을 수 있다.
+    for k, v in site().items():
         out = out.replace("{{%s}}" % k, str(v))
     left = re.findall(r"\{\{(\w+)\}\}", out)
     if left:

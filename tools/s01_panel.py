@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""1단계 — 저자진 4 + 검토진 12 패널을 뽑고 **엑셀 명부**로 남긴다.
+"""1단계 — 저자진 4 + 검토진 16 패널을 뽑고 **엑셀 명부**로 남긴다.
 
     python tools/s01_panel.py            pack/persona.yaml → 엔진 sample_panel → data/00_패널/
     python tools/s01_panel.py --xlsx     이미 뽑은 json 으로 명부만 다시 만든다
@@ -21,6 +21,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from _engine import ENGINE, VENV_PY
+from common import site
 
 ROOT = Path(__file__).resolve().parents[1]
 PACK = "uz-nurse"
@@ -44,7 +45,8 @@ def sample():
     shutil.copy(ROOT / "pack" / "persona.yaml", eng_pack / "persona.yaml")
     if not (eng_pack / "pack.yaml").is_file():
         io.open(eng_pack / "pack.yaml", "w", encoding="utf-8").write(
-            "# 패널 추출 전용 팩. 집필 파이프라인은 %s 에 있다.\nslug: %s\nlabel: 우즈베키스탄 간호사 LMS 강의\npersona: persona.yaml\n" % (ROOT, PACK))
+            "# 패널 추출 전용 팩. 집필 파이프라인은 %s 에 있다.\nslug: %s\nlabel: %s\npersona: persona.yaml\n"
+            % (ROOT, PACK, site()["label"]))
     (ENGINE / "data" / PACK / UNIT).mkdir(parents=True, exist_ok=True)
     src = ENGINE / "data" / PACK / UNIT / "01_선정" / ("01_%s_패널.json" % UNIT)
     if src.exists():
@@ -159,10 +161,10 @@ if __name__ == "__main__" and "--bio" not in sys.argv:
 
 
 # ── 약력 — 모델이 한 번 쓴다 ─────────────────────────────────────────────────
-BIO_PROMPT = """아래는 우즈베키스탄 1~3년차 일반간호사 대상 LMS 강의(45분 × 122강)를 만들기 위해
+BIO_PROMPT = """아래는 {country} {learner} 대상 LMS 강의(45분 × {total}강)를 만들기 위해
 페르소나 데이터셋에서 뽑은 저자진 4명과 검토진 16명의 차원값입니다. 실제 인물이 아닌 가상의 응답자입니다.
 
-각 사람에게 **가명**(지역에 맞는 이름; 동아시아면 한국 이름, MENA·동유럽·남아시아·동남아시아면 우즈베키스탄에서 흔한 이름)과
+각 사람에게 **가명**(지역에 맞는 이름; 동아시아면 한국 이름, {regions}면 {country}에서 흔한 이름)과
 **약력 2~3문장**(한국어, 존칭 없이 담담하게)을 써 주십시오. 약력은 차원값과 모순되지 않아야 하고,
 이 과제에서 맡은 자리(저자진의 관점 / 검토진의 층)에 맞아야 합니다. 없는 수치나 기관명을 지어내지 마십시오 —
 "타슈켄트의 한 지역병원" 처럼 일반적으로 적습니다. 검토진 학습자 층(1년차·2·3년차)은 그 연차에 맞는 경험을 적습니다.
@@ -188,7 +190,10 @@ def bio():
             head = "검토진 %s · %s" % (p["seat"], p.get("desc", ""))
         dims = "; ".join("%s=%s" % kv for kv in sorted(p["persona"].get("dimensions", {}).items()))
         cards.append("- %s: %s\n  차원: %s" % (no, head, dims))
-    prompt = BIO_PROMPT % "\n".join(cards)
+    s = site()
+    prompt = (BIO_PROMPT.replace("{country}", s["country"]).replace("{learner}", s["learner"])
+              .replace("{total}", str(s["total_lectures"])).replace("{regions}", s["name_regions"])
+              % "\n".join(cards))
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     io.open(OUT_DIR / "약력_프롬프트.txt", "w", encoding="utf-8").write(prompt)
     print("모델을 부릅니다(약력 20명, 1회)...")
