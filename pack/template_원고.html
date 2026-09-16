@@ -21,6 +21,8 @@
       퀴즈·참고문헌 장은 data-say 가 비어 있다(낭독 없음, 화면만).
     h1 에는 앞뒤 장의 대본이 붙어 있다 — 표지에서 읽을 data-say, 마무리에서
       읽을 data-outro-say(각각 …-read 가 따라온다).
+      ★ h1 에 보이는 글은 **강 제목 하나뿐**이다. 과정·코드·차시 같은 관리용 정보를
+        화면에 두면 표지 내레이션이 그것까지 읽는다. 그 정보는 meta 와 주석에만 둔다.
     h3 의 data-id 는 **안 바뀌는 이름표**다(`b01-1-03-07` = B-01 1차시 3블록 7장).
       그림 파일을 번호가 아니라 여기에 매달아라.
     [LOCALIZE: 종류 — 내용] 은 현지에서 바꿔야 하는 자리다. 화면에만 있고 낭독에는 없다.
@@ -117,7 +119,7 @@ p.src { font-size: 0.8rem; color: #94A3B8; margin-top: 0.6em; }
 </head>
 <body>
 <h1 data-say="{{h1_say}}" data-read="{{h1_read}}" data-outro-say="{{h1_outro_say}}" data-outro-read="{{h1_outro_read}}">{{title}}</h1>
-<p>{{subtitle}}</p>
+<!-- {{subtitle}} -->
 {{body}}
 </body>
 </html>

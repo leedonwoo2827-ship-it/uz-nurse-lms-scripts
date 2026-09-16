@@ -20,3 +20,6 @@ __pycache__/
 # 강 폴더 안의 언더바 로그
 _s05.log
 _*.log
+
+# 공유용 ZIP
+_share/

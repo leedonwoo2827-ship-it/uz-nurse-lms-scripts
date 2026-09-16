@@ -82,8 +82,8 @@ def write_lecture(lecture_id: str, only=None, fix=False):
             got = json.load(io.open(out, encoding="utf-8"))
             prev_say = (got["slides"][-1].get("say") or prev_say) if got.get("slides") else prev_say
             continue
-        h1_hint = ('{"h1": {"say": "표지에서 읽을 한두 문장(강 제목·오늘 할 일)", "read": "그 발음판", '
-                   '"outro_say": "마무리 화면에서 읽을 한두 문장", "outro_read": "그 발음판"},\n ') if i == 1 else "{"
+        # ★ 표지·마무리 낭독은 모델에게 시키지 않는다 — 도구가 강마다 같은 형태로 만든다(s06.cover_lines).
+        h1_hint = "{"
         prompt = fill(
             "05_집필.md",
             authors=panel_cards("author"),

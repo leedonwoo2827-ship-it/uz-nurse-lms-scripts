@@ -28,6 +28,31 @@ def attr(s: str) -> str:
     return html.escape((s or "").strip(), quote=True).replace("\n", " ")
 
 
+def has_jong(word: str) -> bool:
+    """마지막 한글 글자에 받침이 있는가. 조사를 고르는 데 쓴다."""
+    for c in reversed((word or "").strip()):
+        if "가" <= c <= "힣":
+            return (ord(c) - 0xAC00) % 28 != 0
+        if c.isalnum():
+            return c in "013678lmnr"      # 영문·숫자로 끝나면 흔한 읽기로 어림
+    return False
+
+
+def cover_lines(title: str):
+    """표지·마무리 낭독. **도구가 만든다** — 강마다 같은 형태여야 한다.
+
+    ★ 제목 말고 다른 것을 읽히지 않는다. 과정·코드·차시 같은 관리용 정보를 화면에 두면
+      영상 도구가 그것까지 읽어 "비 공 일 일 사십오 분 엘엠에스" 가 되어 버린다(실측).
+    """
+    t = title.strip()
+    spoken = t.replace(" — ", ", ").replace("—", ",")     # 줄표는 소리로 읽을 수 없다. 쉼표로 쉰다
+    say = "안녕하세요. %s%s 시작하겠습니다." % (t, "을" if has_jong(t) else "를")
+    read = "안녕하세요. %s%s 시작하겠습니다." % (spoken, "을" if has_jong(spoken) else "를")
+    outro = "지금까지 %s%s습니다. 들어주셔서 감사합니다." % (t, "이었" if has_jong(t) else "였")
+    outro_read = "지금까지 %s%s습니다. 들어주셔서 감사합니다." % (spoken, "이었" if has_jong(spoken) else "였")
+    return say, read, outro, outro_read
+
+
 def sid(lecture_id: str, block: int, no_in_corner: int, corner: str) -> str:
     # b01-1-03-07 = B-01 1차시 3블록 7장. 본문이 아닌 코너는 블록 자리에 코너 약자.
     code, k = lecture_id.rsplit("-", 1)
@@ -95,14 +120,17 @@ def assemble(lecture_id: str, final=False):
         parts.append('<div class="doc">%s</div>' % clean_body(s.get("body")))
 
     minutes = total_say / cfg["chars_per_sec"] / 60
-    title = "%s %s" % (lecture_id, sb.get("title", ""))
+    # ★ h1 에 보이는 글은 **강 제목 하나뿐**이다. 차시ID·과정·코드는 넣지 않는다 — 읽혀 버린다.
+    title = sb.get("title", "").strip()
+    say, read_h1, outro_say, outro_read = cover_lines(title)
+    total_say += len(say) + len(outro_say)
     tpl = read(PACK_DIR / "template_원고.html")
     out = (tpl.replace("{{title}}", html.escape(title))
            .replace("{{meta}}", attr("%s · %d장 · data-say %d자" % (lecture_id, len(slides), total_say)))
            .replace("{{say_total}}", "{:,}".format(total_say))
            .replace("{{minutes}}", "%d분 %02d초" % (int(minutes), int(round((minutes % 1) * 60))))
-           .replace("{{h1_say}}", attr(h1.get("say", ""))).replace("{{h1_read}}", attr(h1.get("read") or h1.get("say", "")))
-           .replace("{{h1_outro_say}}", attr(h1.get("outro_say", ""))).replace("{{h1_outro_read}}", attr(h1.get("outro_read") or h1.get("outro_say", "")))
+           .replace("{{h1_say}}", attr(say)).replace("{{h1_read}}", attr(read_h1))
+           .replace("{{h1_outro_say}}", attr(outro_say)).replace("{{h1_outro_read}}", attr(outro_read))
            .replace("{{subtitle}}", html.escape("%s · %s %s · %s/%s강 · 45분 LMS 강의 · 한국어 마스터 원고%s" % (
                subj["과정"], subj["코드"], subj["교과목명"], sl["차수"], sl["총차수"], " (탈고)" if final else " (초고)")))
            .replace("{{body}}", "\n".join(parts)))
