@@ -12,6 +12,10 @@ _prompts/
 _log/
 _local/
 
+# 산출물 — 납품 계약 산출물이라 공개 저장소에 두지 않는다.
+# 로컬에는 그대로 있고, 전달은 _share 의 ZIP 으로 한다.
+data/
+
 __pycache__/
 *.pyc
 ~$*.xlsx
