@@ -1,0 +1,149 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  우즈베키스탄 간호사 LMS 강의 — 저자진 4 + 검토진 16 표본 조건 (합 20명)
+#
+#  ★ 엔진(260810-MatrAIx-검토분석엔진)의 tools/sample_panel.py 가 읽는다.
+#    이 파일을 엔진 packs/uz-nurse/persona.yaml 로 복사해서 돌린다(s01_panel.bat).
+#  ★ 차원·값은 MatrAIx-Persona-8B/persona/schema/dimensions.json 에 있는 것만 썼다.
+#    (fam_nursing · ind_healthcare · role_function: Clinical · domain: Healthcare & Medicine 확인)
+#  ★ 채워진 차원이 페르소나마다 달라 must 를 겹치면 0명이 뽑힌다.
+#    첫 실행에서 후보 수를 보고 must → prefer 로 풀 수 있게 자리를 정하는 조건만 must 다.
+# ═══════════════════════════════════════════════════════════════════════════
+
+source:
+  dataset: MatrAIx2026/MatrAIx_Persona_1M_Public_Release
+  local: MatrAIx-Persona-8B/persona/datasets/matraix-persona-1m/release
+  codes_schema: persona_codes.schema.json
+  shards:
+    - data/persona-1m-0005.parquet
+    - data/persona-1m-0004.parquet
+  prefer_sources: [real_human_survey, prism, stackoverflow]
+
+seed: 20260916
+
+# 공통 — 보건의료를 아는 사람. 언어·지역은 자리마다 다르게 건다.
+common:
+  must_any:
+    - ind_healthcare: [Veteran, Experienced, Some exposure]
+    - fam_nursing: [Expert, Proficient, Familiar]
+    - domain: [Healthcare & Medicine]
+
+# ── 저자진 4명 — 쓰는 사람들 ────────────────────────────────────────────────
+author:
+  n: 4
+  note: "한국 간호교육·임상 실무. 세브란스·아산·SNUH 신규간호사 교육 구조를 안다. 넷이 합의한 원고 하나를 낸다."
+  common:
+    must:
+      age_bracket: ["25-34", "35-44", "45-54", "55-64"]
+    prefer:
+      lang_korean: [Native, Fluent]
+      region: [East Asia]
+      years_experience: ["6-10", "11-20", "20+"]
+
+  seats:
+    - id: E1
+      view: 임상 실무
+      asks: "이 순서로 하면 병동에서 실제로 되는가. 술기 단계에서 빠진 동작이 있는가."
+      must:
+        ind_healthcare: [Veteran, Experienced]
+      prefer:
+        role_function: [Clinical]
+        fam_nursing: [Expert, Proficient]
+        domain_characteristics: [Practitioner]
+
+    - id: E2
+      view: 간호교육
+      asks: "1~3년차가 이 순서로 따라오는가. 45분 안에 학습목표 3개가 닫히는가."
+      must_any:
+        - domain_characteristics: [Educator]
+        - role_function: [Teaching]
+      prefer:
+        fam_nursing: [Expert, Proficient, Familiar]
+        skill_public_speaking: [Master, Advanced]
+        domain: [Healthcare & Medicine, Education]
+
+    - id: E3
+      view: 연구·근거
+      asks: "수치와 지침이 출처와 맞는가. 용어를 한 뜻으로만 쓰고 있는가."
+      must:
+        highest_education: ["Master's", "Doctorate", "Postdoc"]
+      prefer:
+        domain: [Healthcare & Medicine, Natural Sciences]
+        role_function: [Research]
+        fam_nursing: [Expert, Proficient]
+        fam_pharmacology: [Expert, Proficient, Familiar]
+
+    - id: E4
+      view: 국제·현지화
+      asks: "한국에서만 맞는 말은 아닌가. 우즈베키스탄 병동에서 없는 장비·제도를 전제하지 않는가."
+      must:
+        region: [MENA, Eastern Europe, South Asia, Southeast Asia]
+      prefer:
+        ind_healthcare: [Veteran, Experienced, Some exposure]
+        english_proficiency: [Native, "Fluent (C1-C2)", "Intermediate (B1-B2)"]
+        domain_characteristics: [Practitioner, Educator]
+
+# ── 검토진 12명 — 학습자 대역 + 현지 SME ─────────────────────────────────────
+reviewer:
+  n: 16
+  note: "1~3년차 일반간호사(hamshira) 대역 8명 + 현지 SME 4명 + 현지 교육담당(프리셉터) 4명. 저자진이 낸 원고를 읽는다."
+  reads: "강별 원고 HTML 을 펼친 글. 설계 단계에는 목차 검토로만 들어온다."
+  strata:
+    - id: L-1년차
+      n: 4
+      desc: "간호 지식은 학교에서 배운 수준. 병동 1년 미만. 용어를 처음 듣는 자리가 많다."
+      must:
+        fam_nursing: [Familiar, Aware]
+      prefer:
+        ind_healthcare: [Some exposure]
+        age_bracket: ["18-24", "25-34"]
+        region: [MENA, Eastern Europe, South Asia, Southeast Asia]
+
+    - id: L-2·3년차
+      n: 4
+      desc: "기본 술기는 몸에 익었다. 왜 그렇게 하는지, 예외 상황이 궁금하다."
+      must:
+        fam_nursing: [Proficient]
+      prefer:
+        ind_healthcare: [Experienced]
+        age_bracket: ["25-34", "35-44"]
+        region: [MENA, Eastern Europe, South Asia, Southeast Asia]
+
+    - id: L-현지SME
+      n: 4
+      desc: "간호교육·감염관리·응급 분야 전문가. 한국 사례가 현지에 맞는지 본다."
+      must:
+        fam_nursing: [Expert]
+      prefer:
+        ind_healthcare: [Veteran]
+        highest_education: ["Master's", "Doctorate"]
+        role_function: [Clinical, Teaching, Research]
+
+    - id: L-교육담당
+      n: 4
+      desc: "병원 교육담당·프리셉터. 이 강의를 틀어 놓고 신규 간호사를 가르칠 사람. 현장 적용과 평가 연결을 본다."
+      must_any:
+        - domain_characteristics: [Educator]
+        - role_function: [Teaching]
+      prefer:
+        fam_nursing: [Expert, Proficient, Familiar]
+        ind_healthcare: [Veteran, Experienced]
+        region: [MENA, Eastern Europe, South Asia, Southeast Asia]
+
+selection:
+  rule: "must 전부 통과 → prefer 맞은 개수로 점수 → 높은 순. 같으면 prefer_sources 우선, 그다음 씨앗 해시."
+  order: [author, reviewer]
+  unique: true
+
+scoring:
+  learner_scale: [0, 5]
+  revise_below: 3.0
+  target_mean: 3.5
+require:
+  - "막힌 문장을 원문에서 그대로 인용한다 — 요약하면 어디를 고쳐야 할지 모른다."
+  - "이해했다고만 적지 않는다. 무엇을 이해했는지 한 줄로 되말해 본다."
+  - "전문가는 지적마다 근거를 댄다. 근거를 못 대면 '의심' 으로 표시하고 넘어간다."
+  - "지적이 없는 장도 '이상무' 로 적는다. 비어 있으면 안 읽은 것과 구분이 안 된다."
+
+limits: >
+  이 표본은 실제 우즈베키스탄 간호사를 대체하지 않는다. 4명·16명은 초안 점검이다.
+  현지 파일럿 반응을 받은 뒤 그 실측으로 위 조건을 교정하는 것이 다음 단계다.

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>{{title}}</title>
+<meta name="lecture" content="{{meta}}">
+<!--
+  LMS 강의 원고 (우즈베키스탄 간호사 · 한국어 마스터) — {{title}}
+  이 파일을 읽는 파이프라인에게:
+    h3 하나 = 슬라이드 한 판. 그 밑의 p·li·table·svg 가 그 판의 몸통이다.
+    장마다 **표 아니면 그림이 하나씩** 있다. 줄글만 있는 판은 없다.
+    h3 의 data-say 가 **그 장에서 읽을 대본**이다. 화면 글이 아니라 소리다.
+      - 내레이션을 새로 짓지 말고 이 글을 그대로 읽혀라.
+      - **자막은 data-say, TTS 에 넣을 것은 data-read** 다. 뜻은 같고,
+        data-read 는 **소리 나는 대로** 적어 두었다(맞춤법이 아니다). 모든 장에 둘 다 있다.
+      - data-img 는 그 장의 **이미지 대본**(장면 지시)이다. 지금은 렌더에 쓰지 않는다.
+        몇 장을 그림으로 바꿀지는 나중에 고른다.
+      - 대본 합계 {{say_total}}자 · 330자/분(5.5자/초) 기준 약 {{minutes}}.
+      - 화면 글(p·li)과 일부러 다르다.
+    h2 는 코너다: 생각해보기 → 학습목표 → 학습내용 → 본문 Ⅰ~Ⅴ → 정리하기 → 퀴즈 → 참고문헌.
+      퀴즈·참고문헌 장은 data-say 가 비어 있다(낭독 없음, 화면만).
+    h1 에는 앞뒤 장의 대본이 붙어 있다 — 표지에서 읽을 data-say, 마무리에서
+      읽을 data-outro-say(각각 …-read 가 따라온다).
+    h3 의 data-id 는 **안 바뀌는 이름표**다(`b01-1-03-07` = B-01 1차시 3블록 7장).
+      그림 파일을 번호가 아니라 여기에 매달아라.
+    [LOCALIZE: 종류 — 내용] 은 현지에서 바꿔야 하는 자리다. 화면에만 있고 낭독에는 없다.
+    한 판은 944 × 507px 안에 여섯 줄 이내.
+-->
+<style>
+body { font-family: "Noto Sans KR", "Pretendard", "Malgun Gothic", "맑은 고딕",
+                    system-ui, sans-serif;
+       font-size: 16px; line-height: 1.75; color: #334155;
+       letter-spacing: -0.005em; padding: 8px 4px 40px; }
+
+/* 제목 — 원고 파일을 사람이 열어 볼 때만 보인다(영상에는 쇼케이스 제목이 뜬다).
+   가이드의 「2색 제목」을 따라 기본은 슬레이트, 강조는 파랑으로 둔다. */
+h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em;
+     margin: 0 0 6px; color: #334155; }
+h1 + p { margin: 0 0 22px; padding-bottom: 14px; color: #94A3B8;
+         font-size: 0.9rem; border-bottom: 1px solid #E2E8F0; }
+h2 { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em;
+     margin: 2.4em 0 0.8em; padding: 0 0 0 11px; color: #1F4E79;
+     border-left: 4px solid #2E75B6; line-height: 1.5; }
+h3 { font-size: 1.06rem; font-weight: 700; letter-spacing: -0.02em;
+     margin: 1.7em 0 0.5em; color: #334155; line-height: 1.55; }
+h2 .q, h3 .q { display: inline-block; font-weight: 400; font-size: 0.72em;
+               line-height: 1.5; vertical-align: middle; white-space: normal; }
+
+/* ── 몸통 — 여기부터가 영상에 그대로 들어간다 ──────────────────────────── */
+
+p { line-height: 1.75; margin: 0.45em 0; }
+
+/* ★ 가이드의 「리드(한 줄 요약)」. 첫 문단을 굵은 파랑으로 세워 그 장이 무엇을
+   말하는지 한 줄로 먼저 읽히게 한다. **마크업을 안 바꾸고** 자리로만 고른다 —
+   원고를 쓰는 쪽(b3)이 한 줄을 더 신경 쓸 필요가 없고, 줄 세기도 안 흔들린다. */
+.doc > p:first-child { font-weight: 700; color: #1F4E79; letter-spacing: -0.015em;
+                       margin: 0 0 0.7em; }
+
+/* 목록 — 가이드의 「큰 숫자를 연하게」. 기본 불릿을 버리고 연한 파랑 사각형을
+   쓴다. 점보다 각이 진 표가 슬라이드에서 또렷하게 읽힌다. */
+ul, ol { margin: 0.45em 0 0.85em; padding-left: 0; list-style: none; }
+li { position: relative; margin: 0.4em 0; padding-left: 17px; line-height: 1.7; }
+li::before { content: ""; position: absolute; left: 0; top: 0.62em;
+             width: 7px; height: 7px; background: #9DC3E6; border-radius: 2px; }
+ol { counter-reset: n; }
+ol > li::before { content: counter(n); counter-increment: n;
+                  width: auto; height: auto; top: 0; background: none;
+                  color: #CBD5E1; font-weight: 700; font-size: 0.95em; }
+
+/* 강조 — 굵게만 하지 않고 색까지 준다. 가이드가 제목에서 쓰는 2색 규칙을
+   본문에서도 같은 뜻으로 반복하는 것이다. */
+b, strong { font-weight: 700; color: #1F4E79; }
+code { background: #F1F5F9; color: #334155; padding: 1px 5px; border-radius: 3px;
+       font-size: 0.92em; }
+
+/* 표 — 가이드 그대로. 머리행 진한 파랑 채움 + 흰 글자, 본문 행 교차, 테두리 연회색 */
+table { border-collapse: collapse; width: 100%; margin: 0.6em 0 0.9em;
+        font-size: 0.94em; table-layout: fixed; }
+th, td { border: 1px solid #E2E8F0; padding: 0.46em 0.66em;
+         text-align: left; vertical-align: top; line-height: 1.6; }
+th { background: #2E75B6; color: #ffffff; font-weight: 700;
+     letter-spacing: -0.01em; border-color: #2E75B6; }
+tbody tr:nth-child(even) td, tr:nth-child(even) td { background: #F8FAFC; }
+figure { margin: 10px 0; text-align: center; }
+
+/* ★ 근거 쪽 — **접어 둔다.** 눌러야 쪽 범위가 보인다.
+   JS 를 쓰지 않는다: 이 원고를 받는 쪽(발표 쇼케이스)이 <script> 를 전부 제거하고
+   innerHTML 로 넣기 때문에, JS 로 만들면 안 접힌다. label + checkbox 로 CSS 만
+   써서 만든다. <label>·<input>·<b>·<span> 은 전부 phrasing 이라 <h3> 안에 넣어도 된다. */
+.q { display: inline; margin-left: 7px; cursor: pointer; user-select: none;
+     font-size: .78em; font-weight: 700; color: #94A3B8;
+     background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 999px;
+     padding: 1px 8px; white-space: nowrap; vertical-align: middle; }
+.q:hover { background: #E2E8F0; }
+.q > input { position: absolute; opacity: 0; width: 0; height: 0; }
+.q > b::before { content: "\25B8"; margin-right: 3px; font-weight: 400; }
+.q > input:checked ~ b::before { content: "\25BE"; }
+.q > .qn { display: none; }
+.q > input:checked ~ .qn { display: inline; margin-left: 6px; font-weight: 400;
+                           color: #94A3B8; white-space: normal; }
+/* 배지 안의 숫자까지 파랗게 굵어지면 안 된다 — 위 `b` 규칙을 여기서만 되돌린다 */
+.q b { color: inherit; font-weight: 700; }
+
+/* ★ 그림 높이 상한. **폭만 막으면 안 된다** — 인라인 SVG 는 viewBox 비율대로 폭에
+   맞춰 늘어나므로, 가로로 넓은 도식이 화면 절반을 먹는다. `width:auto` +
+   `max-height` 로 비율을 지키면서 높이로 자른다. */
+svg, img { max-height: 240px; width: auto; max-width: 100%; height: auto;
+           display: block; margin: 12px auto 10px; }
+
+/* ★ 어떤 경우에도 가로로 밀지 않는다. 이 원고는 화면이 되므로 마지막 방어선이다. */
+* { max-width: 100%; }
+body { overflow-x: hidden; overflow-wrap: anywhere; }
+
+/* ── 이 프로젝트가 더한 것 ─────────────────────────────────────────────── */
+p.src { font-size: 0.8rem; color: #94A3B8; margin-top: 0.6em; }
+</style>
+</head>
+<body>
+<h1 data-say="{{h1_say}}" data-read="{{h1_read}}" data-outro-say="{{h1_outro_say}}" data-outro-read="{{h1_outro_read}}">{{title}}</h1>
+<p>{{subtitle}}</p>
+{{body}}
+</body>
+</html>
